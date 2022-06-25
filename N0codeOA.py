@@ -19,60 +19,7 @@ from win32file import CreateFile, CloseHandle, GENERIC_READ, OPEN_EXISTING, FILE
 
 
 def atm_txt2excel():
-    with open(Fi1eIN, 'rb') as openfile:
-        enc0des = detect(openfile.readline())
-        print("推测文件编码：", enc0des)
-        enc0de = enc0des['encoding']
-        if enc0de == "GB2312" or "ISO" in enc0de or enc0de is None:
-            enc0de = "GB18030"
-        print("确定文件编码：", enc0de)
-    with open(Fi1eIN, 'r', encoding=enc0de) as openfile:
-        text = openfile.read()
-        text = text.replace("\n", "")
-        text = text.split("日期:")
-        df = pd.DataFrame(columns=["单次交易标记", "冠字号", "银行卡号", "交易日期", "ATM机号", "交易开始时间", "交易结束时间"])
-        df_index = 1
-        for texts in text:
-            if texts:
-                rmb_sn_findall = re.findall(r"(?<=LEVEL4:).*?\d{2}:\d{2}:\d{2} ", texts)
-                trade_beg_time = re.findall(r"\d{2}:\d{2}:\d{2}", texts)
-                if trade_beg_time:
-                    trade_beg_time = trade_beg_time[0]
-                else:
-                    trade_beg_time = "未知"
-                trade_date = re.findall(r"(\d{4}-\d{2}-\d{2})", texts)
-                if trade_date:
-                    trade_date = trade_date[0]
-                else:
-                    trade_date = "未知"
-                atm_sn = re.findall(r"(?<=ATM:)\d{6}", texts)
-                if atm_sn:
-                    atm_sn = atm_sn[0]
-                else:
-                    atm_sn = "未知"
-                bankcard_sn = re.findall(r"\d{19}", texts)
-                if bankcard_sn:
-                    bankcard_sn = bankcard_sn[0]
-                else:
-                    bankcard_sn = "未知"
-                for rmb_sn_find in rmb_sn_findall:
-                    trade_end_time = re.findall(r"\d{2}:\d{2}:\d{2}", rmb_sn_find)
-                    if trade_end_time:
-                        trade_end_time = trade_end_time[0]
-                    else:
-                        trade_end_time = "未知"
-                    rmb_sn_find = rmb_sn_find.replace("  ", " ")
-                    rmb_sn_find = rmb_sn_find.split(" ")
-                    for rmb_sn in rmb_sn_find:
-                        if len(rmb_sn) == 10:
-                            trade_date_sign = trade_date.replace("-", "")
-                            trade_beg_time_sign = trade_beg_time.replace(":", "")
-                            trade_sign = f"{atm_sn}_{trade_date_sign}_{trade_beg_time_sign}"
-                            lst = [trade_sign, rmb_sn, bankcard_sn, trade_date, atm_sn, trade_beg_time, trade_end_time]
-                            df.loc[df_index] = lst
-                            print(lst)
-                            df_index += 1
-    dftofile(df, Fi1eOUT)
+    print("非通用功能，和谐掉了")
 
 
 def get_time(taskname):  # 装饰器：统计函数耗时
@@ -173,27 +120,7 @@ def idcard_analyse():  # 3分析处理 b分析身份证@ 指定单列
 
 
 def network_analyse(task):  # 3分析处理 c分析机构号@ d分析网点名@ 指定单列
-    df = file_read(Fi1eD1R, Fi1eFULL)
-    if not df.empty:
-        if not find_columns(df, C0L.split("|")):
-            file_rename("列名不存在")
-            return
-        id_name = pd.DataFrame()
-        if task == "_机构号":
-            df[task] = df[C0L].str[0:4]
-            id_name = pd.read_excel("_机构号网点名_身份证代码地区_转换表.xlsx", sheet_name='机构号to网点名', dtype=str)
-        elif task == "_精简名拼音":
-            redict = {"[^\u4e00-\u9fa5]": "", "四川省": "", "四川": "", "资阳市": "", "资阳": "", "农村": "", "商业": "",
-                      "银行": "", "股份": "", "有限": "", "公司": "", "农商行": "", "农商": "", "支行": ""}
-            df["_网点精简名"] = df[C0L].astype("str").replace(redict, regex=True)
-            df.insert(0, "_精简名拼音", df.apply(network2pinyin, axis=1), allow_duplicates=True)
-            id_name = pd.read_excel("_机构号网点名_身份证代码地区_转换表.xlsx", sheet_name='网点名to机构号（拼音匹配）', dtype=str)
-        dfresult = pd.merge(df, id_name, how="left", on=task)
-        if task == "_机构号":
-            dfresult = dfresult.drop(["_精简名", "_曾用旧名", "_曾用错名"], axis=1)
-        elif task == "_精简名拼音":
-            dfresult = dfresult.drop(["_精简名", "_精简名拼音"], axis=1)
-        dftofile(dfresult, Fi1eOUT)
+    print("非通用功能，和谐掉了")
 
 
 def excel_analyse():  # 3分析处理 e分析表格结构 可指定多列
