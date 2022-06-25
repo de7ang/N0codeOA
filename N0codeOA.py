@@ -1,22 +1,21 @@
-# encoding: utf-8 2022-6-15
+# encoding: utf-8 2022-6-25
 import pandas as pd
 import numpy as np
-import io
 import os
 import re
 import time
 import chardet
 import zipfile
-import shutil
-import win32file
 import datetime
-from win32file import *
+import pinyin
+import pdfplumber
+from shutil import rmtree
+from io import StringIO
+from win32file import CreateFile, CloseHandle, GENERIC_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, INVALID_HANDLE_VALUE
 from contextlib import redirect_stderr
-import openpyxl
+from openpyxl import Workbook
 from docx import Document
 from pdf2docx import Converter
-import pdfplumber
-import pinyin
 
 
 def atm_txt2excel():
@@ -184,7 +183,7 @@ def network_analyse(task):  # 3分析处理 c分析机构号@ d分析网点名@ 
             df[task] = df[C0L].str[0:4]
             id_name = pd.read_excel("_机构号网点名_身份证代码地区_转换表.xlsx", sheet_name='机构号to网点名', dtype=str)
         elif task == "_精简名拼音":
-            redict = {"[^\u4e00-\u9fa5]": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", 和谐掉了": "",
+            redict = {"[^\u4e00-\u9fa5]": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "",
                       "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": "", "和谐掉了": ""}
             df["_网点精简名"] = df[C0L].astype("str").replace(redict, regex=True)
             df.insert(0, "_精简名拼音", df.apply(network2pinyin, axis=1), allow_duplicates=True)
@@ -210,7 +209,7 @@ def excel_analyse():  # 3分析处理 e分析表格结构 可指定多列
         cols = "    ******所有列的列名及第1行列值******\n"
         for col in df.columns:
             cols = cols + col + "\t：\t" + str(df[col][0]) + "\n"
-        buf = io.StringIO()  # 创建一个StringIO，便于后续在内存中写入str
+        buf = StringIO()  # 创建一个StringIO，便于后续在内存中写入str
         df.info(buf=buf)  # 写入
         info = buf.getvalue()  # 读取
         redict = {"Column": "列名", "Dtype": "数据类型", "dtypes:": "数据类型计数：", "object": "文本", "int64": "整数",
@@ -236,7 +235,7 @@ def word2excel():  # 4智能转换 word转excel
             tb_list.append(list0)
         row_content.append(tb_list)
     if row_content:  # 源文件无表格，则返回1
-        book = openpyxl.Workbook()  # 先创建一个工作簿
+        book = Workbook()  # 先创建一个工作簿
         del book["Sheet"]
         for s, tb in enumerate(row_content[:]):  # 读每个表数据
             sheet = book.create_sheet('Sheet' + str(s))  # 创建一个test_case的sheet表单
@@ -288,6 +287,7 @@ def ofd2txt():  # 4智能转换 ofd转txt
         with open(xmlpath, 'r', encoding="utf-8") as openfile:
             text = openfile.read()
             text = re.sub(r"<.*?>", "", text)
+            text = re.sub(r"M \d.*?\d L 0 0 C", "", text)
             total += text
     if total:
         with open(f"{Fi1eOUT}.txt", 'w', encoding="utf-8") as openfile:
@@ -699,11 +699,11 @@ def dftofile(df, fileout):  # df写入文件 Excel使用zip64
 
 def is_open():  # 判断文件是否打开
     try:
-        vhandle = win32file.CreateFile(Fi1eIN, GENERIC_READ, 0, None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
+        vhandle = CreateFile(Fi1eIN, GENERIC_READ, 0, None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
         if int(vhandle) == INVALID_HANDLE_VALUE:
             print("# 文件被占用中")
             return True  # file is already open
-        win32file.CloseHandle(vhandle)
+        CloseHandle(vhandle)
     except Exception as e:
         print(e)
         return True
@@ -955,10 +955,10 @@ def scanfile(scandir):  # 扫描文件
 
 def deldirs():  # 删除目录
     if os.path.exists(T3MP):
-        shutil.rmtree(T3MP)
+        rmtree(T3MP)
         print("删除临时目录：" + T3MP)
     if os.path.exists(RESU1T):
-        shutil.rmtree(RESU1T)
+        rmtree(RESU1T)
         print("删除结果目录：" + RESU1T)
 
 
