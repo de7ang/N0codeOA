@@ -316,10 +316,16 @@ def split_df():  # 2筛选拆分计算 a拆分指定列@ 指定单列
         if not os.path.exists(outdir):
             os.mkdir(outdir)
         for group in groups:
-            if group[0] == "":
-                group[1].to_excel(outdir + '\\空值.xlsx', index=False)
+            if (len(group[1]) >= 1048576) or 强制输出CSV:
+                if group[0] == "":
+                    group[1].to_csv(outdir + '\\空值.csv', index=False)
+                else:
+                    group[1].to_csv(outdir + "\\" + str(group[0]) + '.csv', index=False)
             else:
-                group[1].to_excel(outdir + "\\" + str(group[0]) + '.xlsx', index=False)
+                if group[0] == "":
+                    group[1].to_excel(outdir + '\\空值.xlsx', index=False)
+                else:
+                    group[1].to_excel(outdir + "\\" + str(group[0]) + '.xlsx', index=False)
 
 
 def select_column(task):  # 2筛选拆分计算 g选取或删除列@@ 指定多列
