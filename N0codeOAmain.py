@@ -792,7 +792,7 @@ def scantask(scandir):  # 扫描任务
                             elif ".ofd" in Fi1eEXT:
                                 ofd2txt()
                             else:
-                                df = file_read(os.path.dirname(左表路径), os.path.basename(左表路径), False)
+                                df = file_read(os.path.dirname(左表路径), os.path.basename(左表路径))
                                 if not df.empty:
                                     dftofile(df)
                                 else:
